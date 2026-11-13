@@ -56,6 +56,9 @@ test('PHANTOM chặn câu ma của Whisper', () => {
 });
 test('friendlyError và RECOVERABLE', () => {
   assert.match(U.friendlyError(new Error('401 {"error":"Invalid API Key"}')), /API key sai/);
+  assert.match(U.friendlyError(new Error('codex lỗi (mã 1): unexpected status 401 Unauthorized: Missing bearer')), /codex login/i);
+  assert.match(U.friendlyError(new Error('claude lỗi (mã 1): 401 Unauthorized')), /claude/i);
+  assert.doesNotMatch(U.friendlyError(new Error('codex lỗi (mã 1): 401 Unauthorized')), /API key sai/);
   assert.match(U.friendlyError(new Error('404 model_not_found')), /Tên model/);
   assert.match(U.friendlyError(new Error('429 rate limit')), /giới hạn/);
   assert.match(U.friendlyError(new Error('fetch failed')), /kết nối/);

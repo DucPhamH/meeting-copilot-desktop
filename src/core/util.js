@@ -67,7 +67,11 @@ function looksLikeQuestion(text) {
 
 function friendlyError(e) {
   const m = String((e && e.message) || e || '');
-  if (/\b401\b|invalid.?api.?key|incorrect api key|unauthorized/i.test(m)) return 'API key sai hoặc đã bị thu hồi — kiểm tra lại trong ⚙.';
+  if (/\b401\b|invalid.?api.?key|incorrect api key|unauthorized/i.test(m)) {
+    if (/\bcodex\b/i.test(m)) return 'Codex chưa đăng nhập hoặc phiên hết hạn — chạy `codex login` trong terminal.';
+    if (/\bclaude\b/i.test(m)) return 'Claude Code chưa đăng nhập hoặc phiên hết hạn — chạy `claude` để đăng nhập lại.';
+    return 'API key sai hoặc đã bị thu hồi — kiểm tra lại trong ⚙.';
+  }
   if (/model.?not.?found|does not exist|\b404\b/i.test(m)) return 'Tên model không tồn tại với tài khoản này — sửa ô "Model" trong ⚙. (' + m.slice(0, 120) + ')';
   if (/\b429\b|rate.?limit|quota/i.test(m)) return 'Đã chạm giới hạn của nhà cung cấp (429) — đợi một lúc hoặc đổi provider.';
   if (/ENOTFOUND|EAI_AGAIN|fetch failed|ECONNREFUSED|ETIMEDOUT|network/i.test(m)) return 'Không kết nối được máy chủ (mạng/Base URL sai?). ' + m.slice(0, 100);

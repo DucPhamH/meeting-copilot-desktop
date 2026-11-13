@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('api', {
   clear: () => ipcRenderer.invoke('clear'),
   exportMd: () => ipcRenderer.invoke('export'),
   quit: () => ipcRenderer.send('quit'),
+  dragStart: () => ipcRenderer.send('win:drag-start'),
+  dragMove: () => ipcRenderer.send('win:drag-move'),
   // thu âm phía renderer (Windows/macOS)
   sendSegment: (buf, who) => ipcRenderer.send('audio:segment', buf, who),
   sendManual: (o) => ipcRenderer.send('audio:manual', o),

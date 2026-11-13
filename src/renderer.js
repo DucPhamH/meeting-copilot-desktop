@@ -108,6 +108,56 @@ $('save').onclick = async () => {
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('set').style.display === 'block') $('cancel').click(); });
 api.onOpenSettings(() => toggleSettings(true));
 
+// ---------- kéo cửa sổ ----------
+$('bar').addEventListener('pointerdown', (e) => {
+  if (e.button !== 0 || e.target.closest('button')) return;
+  $('bar').setPointerCapture(e.pointerId);
+  api.dragStart();
+});
+$('bar').addEventListener('pointermove', (e) => { if ($('bar').hasPointerCapture(e.pointerId)) api.dragMove(); });
+$('bar').addEventListener('pointerup', (e) => { if ($('bar').hasPointerCapture(e.pointerId)) api.dragMove(); });
+
+// ---------- tooltip & dropdown vẽ trong trang ----------
+// Tooltip gốc và popup của <select> là cửa sổ riêng của hệ điều hành: không có cờ ẩn khi share.
+document.addEventListener('mouseover', (e) => {
+  const el = e.target.closest('[title],[data-tip]');
+  if (!el) return;
+  if (el.title) { el.dataset.tip = el.title; el.removeAttribute('title'); }
+  const t = $('tip'); t.textContent = el.dataset.tip; t.style.display = 'block';
+  const r = el.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight;
+  t.style.left = Math.max(4, Math.min(r.left, innerWidth - w - 4)) + 'px';
+  t.style.top = (r.bottom + h + 8 < innerHeight ? r.bottom + 4 : Math.max(4, r.top - h - 4)) + 'px';
+});
+document.addEventListener('mouseout', () => ($('tip').style.display = 'none'));
+
+let ddSel = null;
+function closeDd() { $('dd').style.display = 'none'; ddSel = null; }
+function openDd(sel) {
+  const dd = $('dd');
+  dd.replaceChildren(...[...sel.options].map((o) => {
+    const d = document.createElement('div'); d.textContent = o.text; if (o.value === sel.value) d.className = 'on';
+    d.onmousedown = (e) => { e.preventDefault(); sel.value = o.value; sel.dispatchEvent(new Event('change', { bubbles: true })); closeDd(); };
+    return d;
+  }));
+  const r = sel.getBoundingClientRect(), below = innerHeight - r.bottom - 4, above = r.top - 4;
+  dd.style.display = 'block'; dd.style.left = r.left + 'px'; dd.style.width = r.width + 'px';
+  const up = dd.scrollHeight > below && above > below;
+  dd.style.maxHeight = (up ? above : below) + 'px';
+  dd.style.top = (up ? r.top - Math.min(dd.scrollHeight, above) : r.bottom) + 'px';
+  ddSel = sel;
+}
+document.addEventListener('mousedown', (e) => {
+  $('tip').style.display = 'none';
+  const sel = e.target.closest('select');
+  if (sel) { e.preventDefault(); sel.focus(); ddSel === sel ? closeDd() : openDd(sel); return; }
+  if (!e.target.closest('#dd')) closeDd();
+}, true);
+document.addEventListener('keydown', (e) => {
+  if (ddSel && e.key === 'Escape') { e.stopPropagation(); closeDd(); return; }
+  if (e.target.tagName === 'SELECT' && (e.key === ' ' || e.key === 'Enter' || e.key === 'F4' || (e.altKey && e.key === 'ArrowDown'))) { e.preventDefault(); openDd(e.target); }
+}, true);
+$('set').addEventListener('scroll', closeDd);
+
 // ---------- nút ----------
 $('x').onclick = () => api.quit();
 $('rec').onclick = () => api.manual();

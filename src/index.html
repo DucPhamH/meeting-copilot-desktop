@@ -6,8 +6,8 @@
   :root{--op:.9;--fs:16px}
   html,body{margin:0;height:100%;font:15px system-ui;color:#eee}
   #app{height:100%;display:flex;flex-direction:column;background:rgba(18,18,22,var(--op));border-radius:10px;overflow:hidden}
-  #bar{-webkit-app-region:drag;display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(0,0,0,.45)}
-  #bar b{flex:1;font-size:14px;white-space:nowrap}#bar button{-webkit-app-region:no-drag}
+  #bar{cursor:move;user-select:none;display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(0,0,0,.45)}
+  #bar b{flex:1;font-size:14px;white-space:nowrap}
   button{background:#333;color:#eee;border:0;border-radius:6px;padding:5px 10px;cursor:pointer;font:inherit;font-size:13px}
   button:hover{background:#444}button:disabled{opacity:.5;cursor:default}
   #rec{background:#2d5fd1;font-weight:600}#rec:hover{background:#3a6fe6}
@@ -38,6 +38,9 @@
   #ask{display:flex;gap:5px;padding:6px 10px}
   #ask input{flex:1;background:#222;color:#eee;border:1px solid #444;border-radius:6px;padding:7px;font:inherit;font-size:14px}
   #hint{font-size:10.5px;color:#667;padding:2px 10px 6px}
+  #tip{position:fixed;z-index:20;display:none;max-width:260px;padding:4px 8px;border-radius:5px;background:#000;color:#ddd;font-size:12px;white-space:pre-wrap;pointer-events:none}
+  #dd{position:fixed;z-index:20;display:none;overflow:auto;background:#222;border:1px solid #555;border-radius:5px;font-size:13px}
+  #dd div{padding:6px 8px;cursor:pointer}#dd div:hover,#dd div.on{background:#2d5fd1}
 </style>
 <div id="app">
   <div id="bar"><b title="Monitor" style="white-space:nowrap">📊</b>
@@ -88,6 +91,7 @@
   </div>
   <div id="saveRow"><button id="cancel">Hủy</button><button id="save">Lưu</button></div>
   <div id="hint">Ctrl+Shift+Space: ghi/gửi · Ctrl+Shift+H: ẩn/hiện · Ctrl+Shift+S: chụp màn hình · Ctrl+Shift+C: click xuyên</div>
+  <div id="tip"></div><div id="dd"></div>
 </div>
 <script src="core/vad.js"></script>
 <script src="core/md.js"></script>

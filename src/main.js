@@ -117,16 +117,43 @@ async function captureScreenDataUrl() {
 }
 
 // ---------- Cửa sổ ----------
+// Windows: WDA_EXCLUDEFROMCAPTURE cần cửa sổ layered. Pulse opacity CHỈ lúc tạo/show —
+// gọi setOpacity khi đang kéo sẽ lộ khung HWND trên màn hình thật và trong share.
+let protectTimer = null;
+function protectFromCapture(opts = {}) {
+  if (!win || win.isDestroyed()) return;
+  try {
+    if (opts.layered) {
+      win.setOpacity(0.99);
+      win.setContentProtection(true);
+      win.setOpacity(1);
+    } else {
+      win.setContentProtection(true);
+    }
+  } catch {
+    try { win.setContentProtection(true); } catch {}
+  }
+}
+function protectSoon() {
+  clearTimeout(protectTimer);
+  protectTimer = setTimeout(() => protectFromCapture(), 250);
+}
+
 function createWindow() {
   const { width } = screen.getPrimaryDisplay().workAreaSize;
   win = new BrowserWindow({
     width: 460, height: 600, x: Math.max(0, width - 480), y: 40, minWidth: 320, minHeight: 360,
-    frame: false, transparent: true, alwaysOnTop: true, skipTaskbar: true, hasShadow: false, resizable: true, show: false,
+    frame: false, transparent: true, alwaysOnTop: true, skipTaskbar: true, hasShadow: false, resizable: false, show: false,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true },
   });
   win.setTitle(DISGUISE);
   win.on('page-title-updated', (e) => e.preventDefault());
-  win.setContentProtection(true); // Windows/macOS: ẩn khỏi share. Linux: không có tác dụng.
+  protectFromCapture({ layered: true }); // Windows/macOS: ẩn khỏi share. Linux: không có tác dụng.
+  win.on('show', () => protectFromCapture({ layered: true }));
+  win.on('moved', protectSoon);
+  win.on('resized', protectSoon);
+  // Một số sự kiện Windows làm mất affinity — chỉ setContentProtection, không pulse opacity.
+  setInterval(() => { if (win && !win.isDestroyed() && win.isVisible()) protectFromCapture(); }, 2000).unref();
   win.setAlwaysOnTop(true, 'screen-saver');
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
@@ -145,7 +172,12 @@ function registerShortcuts() {
   reg('CommandOrControl+Shift+S', () => pipeline.shot(captureScreenDataUrl), 'chụp màn hình');
   reg('CommandOrControl+Shift+Space', toggleManual, 'ghi/gửi');
   let through = false;
-  reg('CommandOrControl+Shift+C', () => { through = !through; win.setIgnoreMouseEvents(through, { forward: true }); send('clickthrough', through); }, 'click xuyên');
+  reg('CommandOrControl+Shift+C', () => {
+    through = !through;
+    win.setIgnoreMouseEvents(through, { forward: true });
+    if (!through) protectFromCapture();
+    send('clickthrough', through);
+  }, 'click xuyên');
 }
 
 // Máy chủ trang điện thoại: tuần tự hoá để hai lần lưu cài đặt liên tiếp không mở trùng cổng
@@ -236,6 +268,22 @@ function init() {
   ipcMain.on('audio:segment', (_, ab, who) => { if (audio.isAuto() && ab && (who === 'them' || who === 'me')) pipeline.handleSegment(Buffer.from(ab), who); });
   ipcMain.on('audio:manual', (_, o) => { if (audio.resolveManual) audio.resolveManual({ them: o && o.them ? Buffer.from(o.them) : null, me: o && o.me ? Buffer.from(o.me) : null }); });
   ipcMain.on('quit', () => app.quit());
+  // Kéo cửa sổ tự xử lý: vùng kéo hệ thống đi qua vòng kéo của Windows, vốn chỉ vẽ khung
+  // chữ nhật (lộ cả khi share) nếu người dùng tắt "Show window contents while dragging".
+  let dragOffset = null;
+  ipcMain.on('win:drag-start', () => {
+    if (!win || win.isDestroyed()) return;
+    const c = screen.getCursorScreenPoint(), b = win.getBounds();
+    dragOffset = { dx: c.x - b.x, dy: c.y - b.y, width: b.width, height: b.height };
+  });
+  ipcMain.on('win:drag-move', () => {
+    if (!dragOffset || !win || win.isDestroyed()) return;
+    const c = screen.getCursorScreenPoint();
+    win.setPosition(c.x - dragOffset.dx, c.y - dragOffset.dy);
+    // Màn hình scale lẻ (125%…): mỗi lần đặt vị trí Electron làm tròn và nới cửa sổ thêm vài px.
+    const [w, h] = win.getSize();
+    if (w !== dragOffset.width || h !== dragOffset.height) win.setSize(dragOffset.width, dragOffset.height);
+  });
 }
 
 if (!app.requestSingleInstanceLock()) { app.quit(); } else { init(); }
