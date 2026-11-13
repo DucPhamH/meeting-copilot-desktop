@@ -22,7 +22,8 @@
       "src/stt_worker.py"
     ],
     "win": {
-      "target": "nsis"
+      "signAndEditExecutable": false,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "mac": {
       "target": "dmg",
@@ -35,10 +36,16 @@
       ],
       "category": "Utility",
       "maintainer": "owner <owner@example.com>"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false
     }
   },
   "devDependencies": {
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0"
-  }
+  },
+  "author": "DucPhamH"
 }
