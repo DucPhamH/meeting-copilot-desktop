@@ -1,0 +1,95 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+<title>System Monitor</title>
+<style>
+  :root{--op:.9;--fs:16px}
+  html,body{margin:0;height:100%;font:15px system-ui;color:#eee}
+  #app{height:100%;display:flex;flex-direction:column;background:rgba(18,18,22,var(--op));border-radius:10px;overflow:hidden}
+  #bar{-webkit-app-region:drag;display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(0,0,0,.45)}
+  #bar b{flex:1;font-size:14px;white-space:nowrap}#bar button{-webkit-app-region:no-drag}
+  button{background:#333;color:#eee;border:0;border-radius:6px;padding:5px 10px;cursor:pointer;font:inherit;font-size:13px}
+  button:hover{background:#444}button:disabled{opacity:.5;cursor:default}
+  #rec{background:#2d5fd1;font-weight:600}#rec:hover{background:#3a6fe6}
+  #go.on,#rec.on{background:#c0392b}
+  #rec.on{animation:p 1s infinite}@keyframes p{50%{opacity:.55}}
+  #status{padding:3px 12px;font-size:12px;color:#8a9;background:rgba(0,0,0,.25);min-height:16px}
+  #status.busy{color:#fc6}#status.rec{color:#f77}
+  #note{display:none;align-items:center;gap:6px;padding:4px 10px;font-size:12px;background:#3d3212;color:#ffd78a}
+  #note span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #note button{font-size:11px;padding:2px 7px;background:#5a4a1a}
+  #log{flex:1;overflow:auto;padding:10px}
+  .h{color:#9aa;font-size:13px;margin:10px 0 4px;white-space:pre-wrap;word-break:break-word}
+  .a{background:#1d3a2a;border-left:4px solid #3ddc84;padding:4px 10px;border-radius:6px;font-size:var(--fs);line-height:1.45;cursor:copy;word-break:break-word}
+  .a p{margin:6px 0}.a ul,.a ol{margin:6px 0;padding-left:22px}.a li{margin:2px 0}
+  .a pre{background:#0f2218;padding:8px;border-radius:5px;overflow:auto;font-size:.85em;margin:6px 0}.a code{font-family:ui-monospace,monospace;background:rgba(0,0,0,.25);padding:0 3px;border-radius:3px}.a pre code{background:none;padding:0}
+  .a .md-h{font-weight:700;margin:6px 0}
+  .m{font-size:11px;color:#6a8;margin:2px 0 8px}
+  .e{color:#f88;font-size:12px;margin:6px 0;white-space:pre-wrap;word-break:break-word}
+  .empty{color:#667;text-align:center;margin-top:30px;line-height:1.7}
+  #set{display:none;padding:10px;overflow:auto;flex:1}
+  #set label{display:block;font-size:12px;color:#999;margin-top:8px}
+  #set input,#set select,#set textarea{width:100%;box-sizing:border-box;background:#222;color:#eee;border:1px solid #444;border-radius:5px;padding:6px;font:inherit;font-size:13px}
+  #set input[type=range]{padding:0}
+  #set details{margin-top:12px;border-top:1px solid #333;padding-top:8px}#set summary{cursor:pointer;color:#9ab;font-size:13px}
+  #saveRow{display:none;padding:8px 10px;background:rgba(0,0,0,.45);gap:8px}
+  #saveRow button{flex:1;padding:8px}#save{background:#2d8a4e}
+  #quick{display:flex;gap:5px;flex-wrap:wrap;padding:6px 10px 0}#quick button{font-size:12px;padding:4px 8px}
+  #ask{display:flex;gap:5px;padding:6px 10px}
+  #ask input{flex:1;background:#222;color:#eee;border:1px solid #444;border-radius:6px;padding:7px;font:inherit;font-size:14px}
+  #hint{font-size:10.5px;color:#667;padding:2px 10px 6px}
+</style>
+<div id="app">
+  <div id="bar"><b title="Monitor" style="white-space:nowrap">📊</b>
+    <button id="rec" title="Bấm để ghi, bấm lại để gửi câu hỏi (Ctrl+Shift+Space)">🎙 Ghi câu hỏi</button>
+    <button id="go" title="Tự nghe liên tục và trả lời khi có người hỏi">👂 Nghe liên tục</button>
+    <button id="export" title="Lưu bản ghi cuộc họp ra file .md">💾</button>
+    <button id="clear" title="Xóa màn hình và bắt đầu cuộc họp mới (xóa cả ngữ cảnh)">🗑</button>
+    <button id="gear" title="Cài đặt">⚙</button><button id="x" title="Thoát">✕</button></div>
+  <div id="status">⚪ Sẵn sàng</div>
+  <div id="note"><span id="noteText"></span><button id="copyLink">Copy link</button><button id="noteX">✕</button></div>
+  <div id="log"></div>
+  <div id="quick">
+    <button data-q="Dựa trên cuộc họp, câu hỏi gần nhất tôi nên trả lời thế nào?">💡 Nên trả lời gì?</button>
+    <button data-q="Rút gọn câu trả lời gần nhất của bạn còn 1-2 câu.">✂ Rút gọn</button>
+    <button data-q="Tóm tắt ngắn gọn cuộc họp cho đến giờ bằng vài gạch đầu dòng.">📝 Tóm tắt</button>
+    <button data-q="Gợi ý 3 câu hỏi thông minh tôi có thể hỏi lại.">❓ Gợi ý hỏi lại</button>
+    <button id="shot">📷 Màn hình</button>
+  </div>
+  <form id="ask"><input id="askText" placeholder="Gõ câu hỏi rồi Enter…" autocomplete="off" maxlength="2000"><button>Hỏi</button></form>
+  <div id="set">
+    <label>Bộ não AI (trả lời câu hỏi)</label>
+    <select id="provider"><option value="api">API key (OpenAI/Groq…)</option><option value="claude">Claude Code trên máy (không cần key)</option><option value="codex">Codex trên máy (không cần key)</option></select>
+    <label>Model cho Claude/Codex (trống = mặc định; haiku cho nhanh)</label><input id="cliModel">
+    <label>Phiên âm giọng nói</label>
+    <select id="sttMode"><option value="local">Whisper trên máy (không cần key)</option><option value="api">API (Groq/OpenAI…)</option></select>
+    <label>API key (cho phiên âm / AI qua API) <span id="keyState"></span></label><input id="apiKey" type="password" autocomplete="off">
+    <label>Ngôn ngữ (vi, en… trống = tự nhận)</label><input id="language">
+    <label>Nguồn âm thanh</label>
+    <select id="source"><option value="both">Cả hai (người khác + giọng của tôi)</option><option value="system">Âm thanh hệ thống (người khác nói)</option><option value="mic">Micro</option></select>
+    <label>Kiểu trả lời</label>
+    <select id="mode"><option value="normal">Bình thường (2-4 câu)</option><option value="short">Cực ngắn (1-2 câu)</option><option value="detailed">Chi tiết, có cấu trúc</option><option value="interview">Phỏng vấn (ví dụ cụ thể, STAR)</option><option value="tech">Kỹ thuật (trade-off, code)</option></select>
+    <label>Hồ sơ của tôi (CV, kinh nghiệm, dự án… — AI sẽ trả lời đúng góc nhìn này)</label><textarea id="profile" rows="5" placeholder="Vd: Backend engineer 5 năm, Go/Postgres/K8s, từng dẫn dắt team 4 người…"></textarea>
+    <label>Bối cảnh cuộc họp (tuỳ chọn)</label><textarea id="context" rows="2"></textarea>
+    <label>Độ đậm nền cửa sổ <span id="opv"></span></label><input id="opacity" type="range" min="0.3" max="1" step="0.05">
+    <label>Cỡ chữ câu trả lời <span id="fsv"></span></label><input id="fontSize" type="range" min="12" max="26" step="1">
+    <details><summary>Nâng cao</summary>
+      <label>Base URL</label><input id="baseUrl">
+      <label>Model phiên âm (API)</label><input id="sttModel">
+      <label>Model trả lời (API)</label><input id="llmModel">
+      <label>Model whisper local (tiny/base/small/medium)</label><input id="whisperModel">
+      <label>Gợi ý từ vựng cho phiên âm</label><textarea id="sttPrompt" rows="2"></textarea>
+      <label>AI trả lời cả khi TÔI hỏi bằng micro (để test một mình)</label><select id="answerMic"><option value="true">Có</option><option value="false">Không (chỉ trả lời người khác)</option></select>
+      <label>Xem trên điện thoại / máy khác</label><select id="serve"><option value="true">Bật</option><option value="false">Tắt</option></select>
+      <label>Cổng</label><input id="port" type="number" min="1024" max="65535">
+      <label>Thiết bị phát cần thu (Linux; trống = mặc định). Vd tên sink từ <code>wpctl status</code></label><input id="captureTarget">
+      <label>Ngưỡng im lặng (0.005–0.05; tăng nếu nhiễu nền nhiều)</label><input id="silence" type="number" step="0.005" min="0.003" max="0.1">
+    </details>
+  </div>
+  <div id="saveRow"><button id="cancel">Hủy</button><button id="save">Lưu</button></div>
+  <div id="hint">Ctrl+Shift+Space: ghi/gửi · Ctrl+Shift+H: ẩn/hiện · Ctrl+Shift+S: chụp màn hình · Ctrl+Shift+C: click xuyên</div>
+</div>
+<script src="core/vad.js"></script>
+<script src="core/md.js"></script>
+<script src="capture-web.js"></script>
+<script src="renderer.js"></script>

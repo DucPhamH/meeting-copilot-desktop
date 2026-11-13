@@ -1,0 +1,44 @@
+{
+  "name": "meeting-copilot",
+  "version": "1.1.0",
+  "description": "AI trả lời câu hỏi trong cuộc họp, ẩn khỏi màn hình chia sẻ",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node scripts/start.js",
+    "test": "node --test --test-timeout=90000 test/core.test.js test/pipeline.test.js test/audio-server.test.js test/smoke.test.js",
+    "e2e": "node test/e2e/run.js",
+    "e2e:web": "node test/e2e/web-audio.js",
+    "dist": "electron-builder",
+    "pack": "electron-builder --dir"
+  },
+  "build": {
+    "appId": "com.example.meetingcopilot",
+    "productName": "System Monitor",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "src/stt_worker.py"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.utilities"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "maintainer": "owner <owner@example.com>"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}
