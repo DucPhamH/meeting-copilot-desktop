@@ -150,6 +150,8 @@ test('server: trang chủ, md.js, state, 404, 405, header bảo mật', async ()
   const s = await mkServer(); const k = '?k=' + s.K;
   const home = await req(s.port, '/' + k); assert.equal(home.status, 200); assert.match(home.headers['content-security-policy'], /default-src 'self'/); assert.equal(home.headers['x-content-type-options'], 'nosniff');
   assert.match(home.body, /EventSource/); assert.match((await req(s.port, '/md.js' + k)).body, /MD/);
+  assert.doesNotMatch(home.body, /<script src="\/md\.js"><\/script>/, 'md.js phải tải kèm token, không thì 403 và câu trả lời không hiện');
+  assert.match(home.body, /\/md\.js\?k='\+encodeURIComponent\(/);
   assert.equal(JSON.parse((await req(s.port, '/state' + k)).body).ok, 1);
   assert.equal((await req(s.port, '/zzz' + k)).status, 404); assert.equal((await req(s.port, '/' + k, { method: 'PUT' })).status, 405); s.srv.stop();
 });

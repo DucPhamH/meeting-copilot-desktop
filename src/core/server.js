@@ -20,7 +20,7 @@ button{padding:0 14px;border:0;border-radius:6px;background:#3ddc84;font-size:15
 </style><div id=st>…</div><div id=l></div>
 <form id=f><input id=q placeholder="Gõ câu hỏi..." autocomplete=off><button>Hỏi</button>
 <button type=button id=r style="background:#4c7bef;color:#fff">🎙</button><button type=button id=g style="background:#555;color:#fff">👂</button></form>
-<script src="/md.js"></script><script>
+<script>document.write('<script src="/md.js?k='+encodeURIComponent(new URLSearchParams(location.search).get('k')||'')+'"><\\/script>')</script><script>
 const k=new URLSearchParams(location.search).get('k'),L=document.getElementById('l'),els={};
 const post=(p,b)=>fetch(p+'?k='+k,{method:'POST',body:b}).catch(()=>{});
 r.onclick=()=>post('/rec');g.onclick=()=>post('/listen');
