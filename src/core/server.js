@@ -29,6 +29,7 @@ const WHO={them:'👥',me:'🎤',ask:'✍',sys:'ℹ'};
 function add(e){
  if(e.kind==='rec'){r.style.background=e.on?'#d33':'#4c7bef';r.textContent=e.on?'⏹':'🎙';return}
  if(e.kind==='listen'){g.style.background=e.on?'#2d8a4e':'#555';return}
+ if(e.kind==='fill-ask'){q.value=e.text||'';return}
  if(e.kind==='status'){st.textContent=({idle:'⚪ Sẵn sàng',listening:'🟢 Đang nghe',recording:'🔴 Đang ghi…',transcribing:'⏳ Đang nhận dạng…',thinking:'💭 AI đang nghĩ…',loading:'⏳ '+e.text,ready:'✅ '+e.text})[e.state]||e.state;return}
  if(e.kind==='delta'){let d=els[e.id];if(!d){d=els[e.id]=document.createElement('div');d.className='a';d.raw='';L.append(d)}d.raw+=e.text;d.textContent='';MD.render(document,d.raw,d)}
  else{const d=document.createElement('div');d.className=e.kind==='error'?'e':e.kind==='meta'?'m':'h';d.textContent=(e.kind==='heard'?(WHO[e.who]||'')+' ':'')+e.text;L.append(d)}

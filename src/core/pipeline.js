@@ -117,6 +117,9 @@ function createPipeline({ loadCfg, emit, stt, llm, isListening = () => false, is
         lastEntry = record(w, t); pushHistory(w === 'me' ? '(Tôi) ' + t : t);
         lastId = newId(); emit({ kind: 'heard', id: lastId, who: w, text: t });
       }
+      const fillText = parts.map(([, t]) => t).join('\n');
+      emit({ kind: 'fill-ask', text: fillText });
+      if (cfg.recAskMode === 'fill') return;
       const body = parts.map(([w, t]) => `${WHO_LABEL[w]}: ${t}`).join('\n');
       await answer(cfg, lastId, [
         { role: 'system', content: llm.sysAsk(cfg) },

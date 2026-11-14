@@ -12,7 +12,8 @@ npm run dist       # đóng gói: AppImage/deb (Linux), nsis (Windows), dmg (mac
 Mở ⚙ để cài đặt. **Không cần key nào** nếu chọn: *Bộ não AI = Claude Code trên máy* + *Phiên âm = Whisper trên máy*.
 
 ## Cách dùng
-- **🎙 Ghi câu hỏi** (`Ctrl+Shift+Space`): bấm để ghi, bấm lại để gửi cả đoạn thành MỘT câu hỏi. Ít tốn model nhất.
+- **🎙 Ghi câu hỏi** (`Ctrl+Shift+Space`): bấm để ghi, bấm lại để nhận dạng cả đoạn thành MỘT câu hỏi. Nội dung phiên âm được điền vào ô gõ bên dưới. Ít tốn model nhất.
+- **Sau khi ghi câu hỏi** (⚙ → Nâng cao): chọn *Điền vào ô và gửi AI ngay* (mặc định) hoặc *Chỉ điền vào ô* để sửa rồi gửi tay.
 - **👂 Nghe liên tục**: tự cắt câu, tự trả lời khi nghe ra câu hỏi (có lọc chào hỏi/nhiễu).
 - Gõ câu hỏi, các nút nhanh, **📷** chụp màn hình (cần model API có vision), **💾** xuất bản ghi `.md`, **🗑** cuộc họp mới.
 - Cài **Hồ sơ của tôi** (CV/kinh nghiệm) và **Kiểu trả lời** để câu trả lời đúng giọng của bạn.

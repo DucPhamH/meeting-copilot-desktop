@@ -123,6 +123,11 @@ test('config.sanitize giữ giá trị hợp lệ, bỏ dấu / cuối baseUrl',
   const c = C.sanitize({ baseUrl: 'https://api.groq.com/openai/v1///', provider: 'claude', cliModel: 'claude-haiku-5-5', port: 9000, token: 'abcdef1234567890' }, C.defaults());
   assert.equal(c.baseUrl, 'https://api.groq.com/openai/v1'); assert.equal(c.provider, 'claude'); assert.equal(c.port, 9000); assert.equal(c.token, 'abcdef1234567890');
 });
+test('config.sanitize recAskMode: mặc định fillAndSend, bỏ giá trị lạ', () => {
+  assert.equal(C.defaults().recAskMode, 'fillAndSend');
+  assert.equal(C.sanitize({ recAskMode: 'fill' }, C.defaults()).recAskMode, 'fill');
+  assert.equal(C.sanitize({ recAskMode: 'evil' }, C.defaults()).recAskMode, 'fillAndSend');
+});
 test('config.store: ghi nguyên tử, quyền 600, tệp hỏng không làm sập', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mc-')); const f = path.join(dir, 's.json');
   const st = C.createStore(f);

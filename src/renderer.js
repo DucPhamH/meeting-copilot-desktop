@@ -1,7 +1,7 @@
 'use strict';
 const $ = (id) => document.getElementById(id);
 const FIELDS = ['provider', 'cliModel', 'sttMode', 'apiKey', 'language', 'source', 'mode', 'profile', 'context', 'opacity', 'fontSize',
-  'baseUrl', 'sttModel', 'llmModel', 'whisperModel', 'sttPrompt', 'answerMic', 'serve', 'port', 'silence', 'captureTarget'];
+  'baseUrl', 'sttModel', 'llmModel', 'whisperModel', 'sttPrompt', 'answerMic', 'recAskMode', 'serve', 'port', 'silence', 'captureTarget'];
 const BOOLS = ['answerMic', 'serve'], NUMS = ['opacity', 'fontSize', 'port', 'silence'];
 const WHO = { them: '👥', me: '🎤', ask: '✍', sys: 'ℹ' };
 const STATUS = { idle: '⚪ Sẵn sàng', listening: '🟢 Đang nghe — nói/hỏi đi', recording: '🔴 Đang ghi… bấm lại để gửi', transcribing: '⏳ Đang nhận dạng…', thinking: '💭 AI đang nghĩ…' };
@@ -55,6 +55,7 @@ api.onResult((e) => {
     case 'rec': return setRec(e.on);
     case 'listen': return setListening(e.on);
     case 'heard': return line('h', `${WHO[e.who] || ''} ${e.text}`.trim());
+    case 'fill-ask': { $('askText').value = e.text || ''; $('askText').focus(); return; }
     case 'delta': { const a = answerEl(e.id); a.raw += e.text; return paint(a); }
     case 'meta': return line('m', e.text);
     case 'error': return line('e', e.text);

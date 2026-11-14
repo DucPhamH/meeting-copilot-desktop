@@ -8,6 +8,7 @@ const ENUMS = {
   sttMode: ['api', 'local'],
   source: ['both', 'system', 'mic'],
   mode: ['short', 'normal', 'detailed', 'interview', 'tech'],
+  recAskMode: ['fillAndSend', 'fill'],
 };
 const MAXLEN = { context: 6000, profile: 12000, sttPrompt: 1000 };
 
@@ -16,7 +17,7 @@ function defaults(opts = {}) {
     apiKey: '', baseUrl: 'https://api.openai.com/v1', sttModel: 'whisper-1', llmModel: 'gpt-4o-mini',
     language: '', context: '', profile: '', mode: 'normal', source: 'both', silence: 0.015,
     provider: 'api', cliModel: '', sttPrompt: DEFAULT_STT_PROMPT,
-    sttMode: opts.hasLocalWhisper ? 'local' : 'api', answerMic: true, whisperModel: 'small',
+    sttMode: opts.hasLocalWhisper ? 'local' : 'api', answerMic: true, recAskMode: 'fillAndSend', whisperModel: 'small',
     captureTarget: '', serve: opts.serve != null ? opts.serve : false, port: 8765, token: '', opacity: 0.9, fontSize: 16,
   };
 }

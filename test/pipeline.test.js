@@ -223,6 +223,27 @@ test('ghi thủ công: STT trả rỗng -> báo', async () => {
   t.p.handleManual({ them: speechPcm(), me: null }); await t.p.whenIdle();
   assert.match(text(t.events, 'error'), /Không nhận dạng được/); t.close();
 });
+test('ghi thủ công fillAndSend: điền ô + gửi AI', async () => {
+  const t = await setup({ recAskMode: 'fillAndSend' });
+  t.api.b.stt.text = 'Docker là gì trong dự án này';
+  t.p.handleManual({ them: speechPcm(), me: null }); await t.p.whenIdle();
+  const fill = t.events.find((e) => e.kind === 'fill-ask');
+  assert.equal(fill.text, 'Docker là gì trong dự án này');
+  assert.equal(t.api.b.calls.chat, 1);
+  assert.equal(text(t.events, 'delta'), 'Docker là nền tảng container hoá.');
+  t.close();
+});
+test('ghi thủ công fill: chỉ điền ô, không gọi AI', async () => {
+  const t = await setup({ recAskMode: 'fill' });
+  t.api.b.stt.text = (n) => (n === 1 ? 'Bạn giải thích Docker thế nào' : 'Em muốn hỏi thêm về Compose');
+  t.p.handleManual({ them: speechPcm(), me: speechPcm() }); await t.p.whenIdle();
+  const fill = t.events.find((e) => e.kind === 'fill-ask');
+  assert.equal(fill.text, 'Bạn giải thích Docker thế nào\nEm muốn hỏi thêm về Compose');
+  assert.equal(t.api.b.calls.chat, 0);
+  assert.ok(!t.events.some((e) => e.kind === 'delta'));
+  assert.equal(t.events.filter((e) => e.kind === 'heard').length, 2);
+  t.close();
+});
 
 test('ask: cắt câu hỏi quá dài, bỏ chuỗi rỗng, không nổ với ký tự lạ', async () => {
   const t = await setup();

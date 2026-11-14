@@ -83,6 +83,7 @@
       <label>Model whisper local (tiny/base/small/medium)</label><input id="whisperModel">
       <label>Gợi ý từ vựng cho phiên âm</label><textarea id="sttPrompt" rows="2"></textarea>
       <label>AI trả lời cả khi TÔI hỏi bằng micro (để test một mình)</label><select id="answerMic"><option value="true">Có</option><option value="false">Không (chỉ trả lời người khác)</option></select>
+      <label>Sau khi ghi câu hỏi</label><select id="recAskMode"><option value="fillAndSend">Điền vào ô và gửi AI ngay</option><option value="fill">Chỉ điền vào ô (sửa rồi gửi tay)</option></select>
       <label>Xem trên điện thoại / máy khác</label><select id="serve"><option value="true">Bật</option><option value="false">Tắt</option></select>
       <label>Cổng</label><input id="port" type="number" min="1024" max="65535">
       <label>Thiết bị phát cần thu (Linux; trống = mặc định). Vd tên sink từ <code>wpctl status</code></label><input id="captureTarget">
